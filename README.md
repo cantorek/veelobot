@@ -1,7 +1,7 @@
 # veelobot
 
 
-my www crawler
+my mikroblog crawler
 
 it's kinda fast, reliable and good
 
