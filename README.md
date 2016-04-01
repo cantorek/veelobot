@@ -1,10 +1,20 @@
 # veelobot
+
+
 my www crawler
 
+it's kinda fast, reliable and good
+
+it stores results in blob file
+
 needs
+
 Net::Curl::Easy
+
 Net::Curl::Multi
+
 Compress::LZ4
+
 
 
 libcurl
