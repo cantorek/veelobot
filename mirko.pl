@@ -50,7 +50,7 @@ sub super_thread() {
     my $e = Search::Elasticsearch->new(
 #        trace_to => 'Stdout',
         nodes => [
-            '46.105.99.160:9200'
+            '127.0.0.1:9200'
         ]
     );
 
