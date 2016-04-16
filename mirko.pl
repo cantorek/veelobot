@@ -50,7 +50,7 @@ sub super_thread() {
     my $e = Search::Elasticsearch->new(
 #        trace_to => 'Stdout',
         nodes => [
-            '127.0.0.1:9200'
+            '46.105.99.160:9200'
         ]
     );
 
@@ -197,7 +197,7 @@ sub super_thread() {
 
 }
 
-#threads->create('super_thread');
+threads->create('super_thread');
 
 
 #$urls->enqueue("http://www.wykop.pl/wpis/17381507");
@@ -208,14 +208,14 @@ for (my $i = $ARGV[0]; $i < $ARGV[1]; $i++) {
 
 my $harvest = Veelobot::Harvest->new($urls, $data);
 
-$harvest->add_handles(300);
+$harvest->add_handles(100);
 
-threads->create( sub { 
-        my $harvest = Veelobot::Harvest->new($urls, $data);
-        $harvest->add_handles(10);
+#threads->create( sub { 
+#        my $harvest = Veelobot::Harvest->new($urls, $data);
+#        $harvest->add_handles(10);
         $harvest->go(); 
-    } );
-#$harvest->go();
+#    } );
+$harvest->go();
 
 super_thread();
 Veelobot::Tools->debug(10, "End");
