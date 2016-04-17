@@ -41,8 +41,6 @@ my $data = Thread::Queue->new();
 $SIG{PIPE} = sub { Veelobot::Tools->debug(10, "SIGPIPE received.");  };
 
 sub super_thread() {
-    my $next = 0;
-#    open(PLIK, ">:raw", "dupa.db.$next");
 
     my $num = 0;
     my $size = 0;
@@ -58,22 +56,9 @@ sub super_thread() {
         $num++;
         Veelobot::Tools->debug( 10, "super thread - LEN ", $urls->pending(), "data", $data->pending(), " NUM ", $num, "total size ", $size );
         my $temp = $stuff->{data};
-#        if ( $size >= 1073741824 ) { #rotate @ 1gb
-#            close(PLIK);
-#            open(PLIK, ">:raw", "dupa.db.$next");
-#            $size = 0;
-#            $next++;
-#        }
+
         next if ( ! $temp || length($temp) <= 10 ); # skip if somehow data size is less than 10 bytes
-        $size += length($temp);
-#        my $compressed = Compress::LZ4::compress($temp);
-        my $url_len = length($stuff->{url});
-#        my $data_len = length($compressed);
-#        my $p = pack("II", $url_len, $data_len);
-#        Veelobot::Tools->debug( 10, "url_len", $url_len, "compressed Data len", $data_len , "size", $size);
-#        print PLIK $p; #write header to file
-#        print PLIK $stuff->{url}; #write url
-#        print PLIK $compressed; #write compressed webpage
+#        $size += length($temp);
 #
 #
 #        dobra kurwa
@@ -169,6 +154,10 @@ sub super_thread() {
             push(@comments, \%com);
         }
 
+        $stuff->{url} =~ /wpis\/(\d+)/;
+        my $id = $1;
+        "a" =~ /a/;  # Reset captures to undef.
+
         my %wpis_dict = ();
         $wpis_dict{'author'} = $user;
         $wpis_dict{'text'} = $text;
@@ -177,6 +166,7 @@ sub super_thread() {
         $wpis_dict{'media'} = $link;
         $wpis_dict{'sex'} = $sex;
         $wpis_dict{'plus'} = $plus;
+        $wpis_dict{'url'} = $stuff->{url};
         $wpis_dict{'comments'} = \@comments;
 
 #        print Dumper(\%wpis_dict);
@@ -186,6 +176,7 @@ sub super_thread() {
         $e->index(
             index   =>  'mirko',
             type    =>  'wpis',
+            id      =>  $id,
             body    =>  \%wpis_dict
         );
 
@@ -193,10 +184,12 @@ sub super_thread() {
         $page->delete();
         
     }
-#    close(PLIK);
 
 }
 
+threads->create('super_thread');
+threads->create('super_thread');
+threads->create('super_thread');
 threads->create('super_thread');
 
 
@@ -208,7 +201,7 @@ for (my $i = $ARGV[0]; $i < $ARGV[1]; $i++) {
 
 my $harvest = Veelobot::Harvest->new($urls, $data);
 
-$harvest->add_handles(100);
+$harvest->add_handles(50);
 
 #threads->create( sub { 
 #        my $harvest = Veelobot::Harvest->new($urls, $data);
