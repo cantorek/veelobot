@@ -191,6 +191,9 @@ threads->create('super_thread');
 threads->create('super_thread');
 threads->create('super_thread');
 threads->create('super_thread');
+threads->create('super_thread');
+threads->create('super_thread');
+threads->create('super_thread');
 
 
 #$urls->enqueue("http://www.wykop.pl/wpis/17381507");
