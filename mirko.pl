@@ -12,6 +12,9 @@ use Veelobot::Harvest;
 use threads;
 use threads::shared;
 
+use Net::Curl::Easy qw(:constants);
+use Net::Curl::Easy;
+
 use Compress::LZ4;
 
 use Data::Dumper;
@@ -48,7 +51,7 @@ sub super_thread() {
     my $e = Search::Elasticsearch->new(
 #        trace_to => 'Stdout',
         nodes => [
-            '46.105.99.160:9200'
+            '127.0.0.1:9200'
         ]
     );
 
@@ -174,7 +177,7 @@ sub super_thread() {
 #        my $json = encode_json \%wpis_dict;
 
         $e->index(
-            index   =>  'mirko',
+            index   =>  'mirko2',
             type    =>  'wpis',
             id      =>  $id,
             body    =>  \%wpis_dict
@@ -182,29 +185,50 @@ sub super_thread() {
 
         #usuwamy drzewko
         $page->delete();
-        
+        if ( $urls->pending() == 0 && $data->pending() == 0 ) {
+            kill 9, $$;
+        }
+
     }
 
 }
 
 threads->create('super_thread');
-threads->create('super_thread');
-threads->create('super_thread');
-threads->create('super_thread');
-threads->create('super_thread');
-threads->create('super_thread');
-threads->create('super_thread');
-
 
 #$urls->enqueue("http://www.wykop.pl/wpis/17381507");
 
-for (my $i = $ARGV[0]; $i < $ARGV[1]; $i++) {
-   $urls->enqueue("http://www.wykop.pl/wpis/$i/");
+
+my $najnowszy = undef;
+
+if ($ARGV[0] == 0) {
+    my $body;
+    my $curl = new Net::Curl::Easy;
+    $curl->setopt( Net::Curl::Easy::CURLOPT_URL, 'http://wykop.pl/mikroblog');
+    $curl->setopt( Net::Curl::Easy::CURLOPT_FOLLOWLOCATION, 1 );
+    $curl->setopt( CURLOPT_FILE, \$body );
+    $curl->perform;
+    my $info = $curl->getinfo(CURLINFO_HTTP_CODE);
+    if ($body =~ /data-id="(\d+)"/ ) {
+        print "NAJNOWSZY = $1 \r\n";
+        $najnowszy = $1;
+    } else {
+        die('something went really wrong');
+    }
+}
+
+if ($najnowszy) {
+    for (my $i = $najnowszy - 1000; $i <= $najnowszy; $i++) {
+        $urls->enqueue("http://www.wykop.pl/wpis/$i/");
+    }
+} else {
+    for (my $i = $ARGV[0]; $i <= $ARGV[1]; $i++) {
+        $urls->enqueue("http://www.wykop.pl/wpis/$i/");
+    }
 }
 
 my $harvest = Veelobot::Harvest->new($urls, $data);
 
-$harvest->add_handles(50);
+$harvest->add_handles(2);
 
 #threads->create( sub { 
 #        my $harvest = Veelobot::Harvest->new($urls, $data);
@@ -213,5 +237,5 @@ $harvest->add_handles(50);
 #    } );
 $harvest->go();
 
-super_thread();
+#super_thread();
 Veelobot::Tools->debug(10, "End");
