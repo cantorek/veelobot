@@ -62,9 +62,7 @@ sub super_thread() {
 
         next if ( ! $temp || length($temp) <= 10 ); # skip if somehow data size is less than 10 bytes
 #        $size += length($temp);
-#
-#
-#        dobra kurwa
+
 #        wyciagamy informacje
         my $page = HTML::TreeBuilder->new;
         $page->ignore_unknown(0);
